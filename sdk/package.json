@@ -6,6 +6,11 @@
   "type": "module",
   "license": "MIT",
   "author": "MaximilianGT500",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MaximilianGT500/moepulse.git",
+    "directory": "sdk"
+  },
   "engines": {
     "node": ">=22.12"
   },
@@ -18,10 +23,38 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/moepulse.d.ts",
+      "types": "./dist/moepulse.d.mts",
       "default": "./dist/moepulse.mjs"
     },
     "./react": "./react/index.ts",
     "./source": "./src/moepulse.ts"
+  },
+  "scripts": {
+    "build": "node --disable-warning=ExperimentalWarning build.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test test/*.test.ts",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "peerDependencies": {
+    "@mui/material": ">=9",
+    "react": ">=19"
+  },
+  "peerDependenciesMeta": {
+    "@mui/material": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.6.0",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "prettier": "^3.10.1",
+    "react": "^19.3.1",
+    "typescript": "^7.0.2"
   }
 }
