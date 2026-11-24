@@ -46,7 +46,7 @@ function json(value: unknown, status = 200) {
   return new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
 }
 
-function fakePulse() {
+function fakePulse(update: Record<string, unknown> = {}) {
   const calls: Call[] = [];
   const keys = new Map<string, string>();
   const fetch = (async (input: string | URL | Request, init?: RequestInit) => {
@@ -63,8 +63,11 @@ function fakePulse() {
         update: true,
         security: false,
         yanked: false,
+        supported: true,
+        minimum: null,
         behind: 1,
         releases: [release],
+        ...update,
       });
     const install = request.headers.get('moepulse-install') ?? '';
     const key = typeof body?.key === 'string' && body.key ? body.key : keys.get(install);
@@ -302,6 +305,17 @@ describe('Client', () => {
     await pulse.checkUpdate({ force: true });
     assert.equal(calls.length, 2);
     assert.equal(pulse.update()?.latest, '1.9.0');
+  });
+
+  test('erkennt nicht mehr unterstützte Versionen', async () => {
+    const { fetch } = fakePulse({ supported: false, minimum: '1.8.5' });
+    const pulse = client(fetch, { consent: () => false });
+    const info = await pulse.checkUpdate();
+    assert.deepEqual([info?.supported, info?.minimum], [false, '1.8.5']);
+    assert.equal(pulse.update()?.supported, false);
+    const old = client(fakePulse({ supported: undefined, minimum: '<script>' }).fetch, { consent: () => false });
+    const fallback = await old.checkUpdate();
+    assert.deepEqual([fallback?.supported, fallback?.minimum], [true, null]);
   });
 
   test('löscht mit forget() alles bei MoePulse und lokal', async () => {

@@ -1,5 +1,14 @@
 # Änderungen am Client
 
+## 1.3.0 – 24.11.2026
+
+**Neu**
+
+- `checkUpdate()` liefert `supported` und `minimum`: Ist die laufende Version älter als die Mindestversion, die MoeStudio vorgibt, steht `supported: false` darin. `update()` und der Heartbeat bringen `supported` ebenfalls mit
+- `PulseUpdate` warnt deutlich, wenn die Version nicht mehr unterstützt wird
+
+Ältere MoePulse-Server schicken das Feld nicht, dann gilt die Version als unterstützt.
+
 ## 1.2.0 – 24.11.2026
 
 **Neu**

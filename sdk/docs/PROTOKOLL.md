@@ -36,7 +36,7 @@ MoePulse lehnt Anfragen ab, deren Zeit mehr als 15 Minuten abweicht, und jede Ei
 ```json
 {
   "protocol": 1,
-  "sdk": "1.2.0",
+  "sdk": "1.3.0",
   "key": "<öffentlicher Schlüssel, SPKI DER in Base64url>",
   "app": "moecloud",
   "version": "1.8.0",
@@ -77,6 +77,7 @@ Antwort:
     "update": true,
     "security": true,
     "yanked": false,
+    "supported": true,
     "url": "https://moecloud.moestudio.net/changelog.html#1.8.1"
   },
   "notices": [
@@ -147,7 +148,7 @@ Fünf Wege, alle signiert wie oben. Der Inhalt hat immer `protocol` und `app`.
   "protocol": 1,
   "app": "moecloud",
   "key": "<öffentlicher Schlüssel>",
-  "sdk": "1.2.0",
+  "sdk": "1.3.0",
   "version": "1.8.0",
   "runtime": { "name": "node", "version": "26.13.1" },
   "subject": "Upload bricht ab",
@@ -197,13 +198,15 @@ Ohne Signatur und ohne Kennung, mit `?version=1.8.0&channel=stable`. Der Kanal i
   "update": true,
   "security": true,
   "yanked": false,
+  "supported": true,
+  "minimum": "1.6.0",
   "behind": 1,
   "releases": [],
   "checkedAt": 1795521960000
 }
 ```
 
-`releases` enthält alle neueren Versionen in derselben Form wie `latest`, neueste zuerst. Zurückgehaltene und zurückgezogene Versionen bietet MoePulse nicht an. Ist die laufende Version zurückgezogen, steht `yanked: true` in der Antwort. Hat MoeStudio für die App eine Version fest vorgegeben, gibt es höchstens bis zu ihr Updates.
+`releases` enthält alle neueren Versionen in derselben Form wie `latest`, neueste zuerst. Zurückgehaltene und zurückgezogene Versionen bietet MoePulse nicht an. Ist die laufende Version zurückgezogen, steht `yanked: true` in der Antwort. Ist sie älter als die Mindestversion `minimum`, steht `supported: false` darin. Ältere Server schicken beide Felder nicht, dann gilt die Version als unterstützt. Hat MoeStudio für die App eine Version fest vorgegeben, gibt es höchstens bis zu ihr Updates.
 
 ## `GET /v1/stats/:app` und `GET /v1/badge/:app/:art.svg`
 

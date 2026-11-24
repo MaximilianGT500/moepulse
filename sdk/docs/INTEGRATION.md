@@ -307,7 +307,7 @@ Bisher fragen die Apps GitHub, ob es eine neue Version gibt. Ab jetzt fragen sie
 
 ### Quellen
 
-Die Quellen trägt MoeStudio in MoePulse ein: das GitHub-Repository der App und ihre Changelog-Seite. Die Seite braucht pro Version eine Überschrift mit der Nummer, darunter Datum und Notizen, so wie bei MoeShare und MoeCloud. Markdown im Stil von Keep a Changelog und JSON gehen auch. Steht eine Version schon im Changelog, aber noch nicht auf GitHub, bietet MoePulse sie erst nach dem Release an.
+Die Quellen trägt MoeStudio in MoePulse ein: die Changelog-Seite der App und auf Wunsch ihr GitHub-Repository. Eine Quelle reicht, Releases oder Tags auf GitHub sind nicht nötig. Die Seite braucht pro Version eine Überschrift mit der Nummer, darunter Datum und Notizen, so wie bei MoeShare und MoeCloud. Markdown im Stil von Keep a Changelog, JSON und die `version.json` der Websites gehen auch. Nach einem Deploy der Website holt MoePulse neue Versionen sofort.
 
 ### In der App
 
@@ -323,17 +323,19 @@ if (update?.update) {
 
 `checkUpdate()` schickt nur App, Version und Kanal mit, keine Kennung, und braucht keine Einwilligung. Das Ergebnis bleibt zehn Minuten im Speicher. Ist MoePulse nicht erreichbar oder mit `MOEPULSE_DISABLED=1` abgeschaltet, kommt `null` zurück, dann kann die App wie bisher bei GitHub nachsehen.
 
-| Feld       | Bedeutung                                                     |
-| ---------- | ------------------------------------------------------------- |
-| `latest`   | Neueste angebotene Version mit Titel, Datum, Link und Notizen |
-| `update`   | Ob die laufende Version älter ist                             |
-| `security` | Ob unter den neueren Versionen ein Sicherheitsupdate ist      |
-| `yanked`   | Ob die laufende Version zurückgezogen wurde                   |
-| `releases` | Alle neueren Versionen, neueste zuerst, höchstens zehn        |
+| Feld        | Bedeutung                                                     |
+| ----------- | ------------------------------------------------------------- |
+| `latest`    | Neueste angebotene Version mit Titel, Datum, Link und Notizen |
+| `update`    | Ob die laufende Version älter ist                             |
+| `security`  | Ob unter den neueren Versionen ein Sicherheitsupdate ist      |
+| `yanked`    | Ob die laufende Version zurückgezogen wurde                   |
+| `supported` | `false`, wenn die Version älter ist als die Mindestversion    |
+| `minimum`   | Älteste Version, die noch unterstützt wird, oder `null`       |
+| `releases`  | Alle neueren Versionen, neueste zuerst, höchstens zehn        |
 
 Installationen mit Einwilligung bekommen eine Kurzfassung schon mit dem Heartbeat. `pulse.update()` liefert sie ohne Netzwerk, gut für ein Badge im Menü.
 
-Im Admin-Bereich zeigt `PulseUpdate` die Prüfung mit Notizen. Es nutzt denselben Weg wie der Support:
+Im Admin-Bereich zeigt `PulseUpdate` die Prüfung mit Notizen, dazu eine deutliche Warnung bei zurückgezogenen und nicht mehr unterstützten Versionen. Es nutzt denselben Weg wie der Support:
 
 ```tsx
 import { PulseUpdate } from './moepulse';

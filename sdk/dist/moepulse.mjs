@@ -6,7 +6,7 @@ import { isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const PROTOCOL = 1;
-export const SDK_VERSION = '1.2.0';
+export const SDK_VERSION = '1.3.0';
 export const DEFAULT_ENDPOINT = 'https://pulse.moestudio.net';
 
 export class PulseError extends Error {
@@ -484,6 +484,8 @@ function cleanUpdate(body, app, version) {
     update: body.update === true,
     security: body.security === true,
     yanked: body.yanked === true,
+    supported: body.supported !== false,
+    minimum: typeof body.minimum === 'string' && body.minimum.length <= 40 && VERSION_TEXT.test(body.minimum) ? body.minimum : null,
     behind: typeof body.behind === 'number' ? Math.max(0, Math.floor(body.behind)) : releases.length,
     releases,
     checkedAt: typeof body.checkedAt === 'number' ? body.checkedAt : Date.now(),
@@ -675,6 +677,7 @@ export function createPulse(options) {
         update: update.update === true,
         security: update.security === true,
         yanked: update.yanked === true,
+        supported: update.supported !== false,
         url: typeof update.url === 'string' && /^https:\/\/[^\s]+$/.test(update.url) ? update.url : null,
       };
     }
@@ -1082,7 +1085,14 @@ export function createPulse(options) {
         if (!info) return updateCache?.info ?? null;
         updateCache = { at: Date.now(), channel, info };
         knownUpdate = info.latest
-          ? { latest: info.latest.version, update: info.update, security: info.security, yanked: info.yanked, url: info.latest.url }
+          ? {
+              latest: info.latest.version,
+              update: info.update,
+              security: info.security,
+              yanked: info.yanked,
+              supported: info.supported,
+              url: info.latest.url,
+            }
           : knownUpdate;
         return info;
       } catch (error) {

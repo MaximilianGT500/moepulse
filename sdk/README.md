@@ -7,7 +7,7 @@ Meldet Installationen, Systeminfos und Fehler einer Moe-App an MoePulse, aber nu
 - entfernt Pfade, Adressen, E-Mails, Links und Schlüssel vor dem Senden
 - signiert jede Meldung mit einem eigenen Ed25519-Schlüssel der Installation
 - spricht nur `https` und folgt keinen Weiterleitungen
-- fragt nach Updates ohne Kennung und ohne Einwilligung
+- fragt nach Updates ohne Kennung und ohne Einwilligung und warnt, wenn eine Version nicht mehr unterstützt wird
 - bringt die App nie zum Absturz, auch wenn MoePulse nicht erreichbar ist
 
 ## Schnellstart
