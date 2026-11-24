@@ -1,0 +1,16 @@
+/*
+!/.gitignore
+!/sdk/
+
+/sdk/node_modules
+/sdk/*.tsbuildinfo
+.env
+.env.*
+*.log
+*.zip
+*.tgz
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
