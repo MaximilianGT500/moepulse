@@ -318,6 +318,27 @@ describe('Client', () => {
     assert.deepEqual([fallback?.supported, fallback?.minimum], [true, null]);
   });
 
+  test('hält sich an eine Sperre und macht nach dem Aufheben weiter', async () => {
+    const { calls, fetch } = fakePulse();
+    let locked = true;
+    const guarded = (async (input: string | URL | Request, init?: RequestInit) =>
+      locked && init?.method === 'POST' ? json({ ok: false, error: 'blocked' }, 403) : fetch(input, init)) as typeof globalThis.fetch;
+    const pulse = client(guarded);
+    await pulse.start();
+    assert.deepEqual([pulse.status().blocked, pulse.status().lastError], [true, 'HTTP 403 blocked']);
+    pulse.capture(new Error('gesperrt'));
+    await pulse.flush(200);
+    await assert.rejects(pulse.support.list(), (error: Error & { code?: string }) => error.code === 'blocked');
+    assert.equal(calls.length, 0);
+    locked = false;
+    await pulse.refresh();
+    assert.deepEqual([pulse.status().blocked, pulse.status().lastError], [false, null]);
+    assert.deepEqual(
+      calls.map((call) => call.path),
+      ['/v1/heartbeat']
+    );
+  });
+
   test('löscht mit forget() alles bei MoePulse und lokal', async () => {
     const { calls, fetch } = fakePulse();
     const dataDir = tempDir();

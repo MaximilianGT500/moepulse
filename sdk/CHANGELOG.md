@@ -1,5 +1,15 @@
 # Änderungen am Client
 
+## 1.3.1 – 26.11.2026
+
+**Behoben**
+
+- Nach `403 blocked` blieb der Client bis zum Neustart der App stumm, auch wenn MoeStudio die Sperre längst aufgehoben hatte. Jetzt prüft er bei `refresh()` sofort, sonst einmal am Tag. Tickets fragen nach zehn Minuten wieder bei MoePulse nach
+
+**Neu**
+
+- `PulseConsent` zeigt bei einer Sperre einen verständlichen Hinweis, dafür gibt es `status.blocked`
+
 ## 1.3.0 – 24.11.2026
 
 **Neu**

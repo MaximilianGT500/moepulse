@@ -36,7 +36,7 @@ MoePulse lehnt Anfragen ab, deren Zeit mehr als 15 Minuten abweicht, und jede Ei
 ```json
 {
   "protocol": 1,
-  "sdk": "1.3.0",
+  "sdk": "1.3.1",
   "key": "<öffentlicher Schlüssel, SPKI DER in Base64url>",
   "app": "moecloud",
   "version": "1.8.0",
@@ -148,7 +148,7 @@ Fünf Wege, alle signiert wie oben. Der Inhalt hat immer `protocol` und `app`.
   "protocol": 1,
   "app": "moecloud",
   "key": "<öffentlicher Schlüssel>",
-  "sdk": "1.3.0",
+  "sdk": "1.3.1",
   "version": "1.8.0",
   "runtime": { "name": "node", "version": "26.13.1" },
   "subject": "Upload bricht ab",
@@ -218,21 +218,21 @@ Ohne Signatur, damit auch Apps ohne Einwilligung Sicherheitshinweise bekommen. A
 
 ## Fehlercodes
 
-| Status | `error`                | Was der Client tut                                                      |
-| ------ | ---------------------- | ----------------------------------------------------------------------- |
-| 400    | `headers`, `invalid`   | Meldung verwerfen                                                       |
-| 400    | `work`                 | Rechenaufgabe mit `bits` neu lösen und einmal neu senden                |
-| 404    | `not_found`            | Das Ticket gibt es nicht oder es gehört einer anderen Installation      |
-| 409    | `duplicate`            | Diese Rechenarbeit wurde schon benutzt                                  |
-| 401    | `clock`                | Uhr mit `now` aus der Antwort abgleichen und einmal neu senden          |
-| 401    | `signature`, `replay`  | Meldung verwerfen                                                       |
-| 403    | `blocked`              | Bis zum Neustart nichts mehr senden                                     |
-| 404    | `unknown`              | Erst einen Heartbeat schicken, dann die Fehler                          |
-| 409    | `identity`             | Neue Identität erzeugen und neu melden                                  |
-| 410    | `app`                  | App ist in MoePulse nicht angelegt, bis zum Neustart nichts mehr senden |
-| 413    | `too_large`            | Meldung verwerfen                                                       |
-| 429    | `limited`              | Nach `retry` Sekunden wieder versuchen                                  |
-| 503    | `paused`, `app_paused` | Nach `retry` Sekunden wieder versuchen                                  |
+| Status | `error`                | Was der Client tut                                                         |
+| ------ | ---------------------- | -------------------------------------------------------------------------- |
+| 400    | `headers`, `invalid`   | Meldung verwerfen                                                          |
+| 400    | `work`                 | Rechenaufgabe mit `bits` neu lösen und einmal neu senden                   |
+| 404    | `not_found`            | Das Ticket gibt es nicht oder es gehört einer anderen Installation         |
+| 409    | `duplicate`            | Diese Rechenarbeit wurde schon benutzt                                     |
+| 401    | `clock`                | Uhr mit `now` aus der Antwort abgleichen und einmal neu senden             |
+| 401    | `signature`, `replay`  | Meldung verwerfen                                                          |
+| 403    | `blocked`              | Gesperrt: nichts mehr senden, einmal am Tag und bei `refresh()` neu prüfen |
+| 404    | `unknown`              | Erst einen Heartbeat schicken, dann die Fehler                             |
+| 409    | `identity`             | Neue Identität erzeugen und neu melden                                     |
+| 410    | `app`                  | App ist in MoePulse nicht angelegt, bis zum Neustart nichts mehr senden    |
+| 413    | `too_large`            | Meldung verwerfen                                                          |
+| 429    | `limited`              | Nach `retry` Sekunden wieder versuchen                                     |
+| 503    | `paused`, `app_paused` | Nach `retry` Sekunden wieder versuchen                                     |
 
 ## Grenzen
 

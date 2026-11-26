@@ -6,7 +6,7 @@ import { isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const PROTOCOL = 1;
-export const SDK_VERSION = '1.3.0';
+export const SDK_VERSION = '1.3.1';
 export const DEFAULT_ENDPOINT = 'https://pulse.moestudio.net';
 
 export type Primitive = string | number | boolean | null;
@@ -259,6 +259,8 @@ interface Reply {
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
+const RECHECK = 24 * HOUR;
+const SUPPORT_RECHECK = 10 * MINUTE;
 const MAX_SCRUB = 20_000;
 const MAX_LINE = 2_000;
 const MAX_REPLY = 256 * 1024;
@@ -764,6 +766,7 @@ export function createPulse(options: PulseOptions): Pulse {
   let identity: Identity | null = null;
   let running = false;
   let blocked = false;
+  let blockedAt = 0;
   let errorsAllowed = true;
   let interval = Math.min(Math.max(options.interval ?? 6 * HOUR, 15 * MINUTE), 24 * HOUR);
   let failures = 0;
@@ -889,9 +892,20 @@ export function createPulse(options: PulseOptions): Pulse {
       return request(path, payload, false);
     }
     if (response.status === 403 && reply.error === 'blocked') {
+      if (!blocked)
+        log(
+          'warn',
+          'MoePulse nimmt von dieser Installation keine Daten an. Die Sperre wird täglich und bei jeder Änderung der Einstellungen neu geprüft.'
+        );
       blocked = true;
-      halt();
-      log('warn', 'MoePulse nimmt von dieser Installation keine Daten mehr an.');
+      blockedAt = Date.now();
+      failures = 0;
+      queue.clear();
+      counters.clear();
+    } else if (blocked && response.status < 400) {
+      blocked = false;
+      blockedAt = 0;
+      log('debug', 'MoePulse nimmt wieder Daten an.');
     }
     if (response.status >= 400) lastError = `HTTP ${response.status}${typeof reply.error === 'string' ? ` ${reply.error}` : ''}`;
     return { status: response.status, body: reply };
@@ -984,14 +998,14 @@ export function createPulse(options: PulseOptions): Pulse {
     consent = await readConsent();
     if (!consent.stats && !consent.errors) return halt();
     await heartbeat();
-    if (running) schedule(failures ? Math.min(interval, MINUTE * 2 ** Math.min(failures, 8)) : jitter(interval));
+    if (running) schedule(blocked ? RECHECK : failures ? Math.min(interval, MINUTE * 2 ** Math.min(failures, 8)) : jitter(interval));
   }
 
   async function heartbeat(): Promise<void> {
     if (beating) return beating;
     beating = (async () => {
       try {
-        if (blocked) return;
+        if (blocked && Date.now() - blockedAt < RECHECK) return;
         await loadIdentity(true);
         const payload = await heartbeatPayload(consent);
         const sent = { ...(payload.counters ?? {}) };
@@ -1020,7 +1034,7 @@ export function createPulse(options: PulseOptions): Pulse {
           schedule(Math.max(Number(reply.body.retry) * 1000, MINUTE));
         } else if (reply?.status === 410) {
           blocked = true;
-          halt();
+          blockedAt = Date.now();
           log('warn', `MoePulse kennt die App ${options.app} nicht und nimmt nichts an.`);
         } else {
           failures++;
@@ -1168,7 +1182,7 @@ export function createPulse(options: PulseOptions): Pulse {
     if (running) return;
     running = true;
     await heartbeat();
-    if (running) schedule(failures ? MINUTE * 2 : jitter(interval));
+    if (running) schedule(blocked ? RECHECK : failures ? MINUTE * 2 : jitter(interval));
   }
 
   function supportError(reply: Reply | null): PulseError {
@@ -1182,7 +1196,7 @@ export function createPulse(options: PulseOptions): Pulse {
 
   async function supportCall(path: string, payload: Record<string, unknown>, create = false) {
     if (disabled) throw new PulseError('disabled', SUPPORT_ERRORS.disabled);
-    if (blocked) throw new PulseError('blocked', SUPPORT_ERRORS.blocked);
+    if (blocked && Date.now() - blockedAt < SUPPORT_RECHECK) throw new PulseError('blocked', SUPPORT_ERRORS.blocked);
     const id = identity ?? (await loadIdentity(create));
     if (!id) return null;
     const reply = await request(path, { protocol: PROTOCOL, app: options.app, ...payload });
@@ -1348,6 +1362,7 @@ export function createPulse(options: PulseOptions): Pulse {
     },
     async refresh() {
       const before = running;
+      if (blocked) blockedAt = 0;
       await activate().catch(() => {});
       if (before && running) await heartbeat();
     },
@@ -1412,6 +1427,7 @@ export function createPulse(options: PulseOptions): Pulse {
         const names = await readdir(stateDir).catch(() => [] as string[]);
         await Promise.all(names.filter((name) => name.startsWith('crash-')).map((name) => unlink(join(stateDir, name)).catch(() => {})));
         blocked = false;
+        blockedAt = 0;
       }
       return done;
     },
